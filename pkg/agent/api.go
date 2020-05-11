@@ -1,6 +1,8 @@
 package agent
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -32,9 +34,36 @@ func (api *API) connect(c *gin.Context) {
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error while upgrading to ws connection: %v", err), 200)
 	}
-
+	req, err := api.waitConnInit(conn)
+	if err != nil {
+		if err == errConnClosed {
+			return
+		}
+		writeErr(conn, err.Error())
+		return
+	}
 }
 
-func (api *API) waitConnInit(conn *websocket.Conn) {
+type initConReq struct {
+	Channel string  `json:"channel"`
+	UID     string  `json:"uid"`
+	Secret  string  `json:"secret"` // User secret
+	LastSeq *uint64 `json:"last_seq"`
+}
+
+var errConnClosed = errors.New("connection closed")
+
+func (api *API) waitConnInit(conn *websocket.Conn) (*initConReq, error) {
 	t, wsr, err := conn.NextReader()
+	if err != nil || t == websocket.CloseMessage {
+		return nil, errConnClosed
+	}
+
+	var req initConReq
+	err = json.NewDecoder(wsr).Decode(&req)
+	if err != nil {
+		return nil, err
+	}
+
+	return &req, nil
 }
