@@ -4,8 +4,9 @@ import (
 	"github.com/lyyyuna/tonghu-chat/pkg/chat"
 )
 
+// One agent per connection
 type Agent struct {
-	cb ChatBroker
+	cb *ChatBroker
 }
 
 // ChatBroker represents chat broker interface
@@ -16,6 +17,8 @@ type ChatBroker interface {
 }
 
 // NewAgent creates new connection agent instance
-func NewAgent() *Agent {
-	return &Agent{}
+func NewAgent(cb *ChatBroker) *Agent {
+	return &Agent{
+		cb: cb,
+	}
 }
