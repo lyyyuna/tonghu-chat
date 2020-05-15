@@ -1,24 +1,26 @@
 package agent
 
 import (
-	"github.com/lyyyuna/tonghu-chat/pkg/chat"
+	"github.com/gorilla/websocket"
+	"github.com/lyyyuna/tonghu-chat/pkg/broker"
 )
 
 // One agent per connection
 type Agent struct {
-	cb *ChatBroker
-}
-
-// ChatBroker represents chat broker interface
-type ChatBroker interface {
-	Subscribe(string, string, uint64, chan *chat.Message) (func(), error)
-	SubscribeNew(string, string, chan *chat.Message) (func(), error)
-	Send(string, *chat.Message) error
+	cb   *broker.ChatBroker
+	conn *websocket.Conn
 }
 
 // NewAgent creates new connection agent instance
-func NewAgent(cb *ChatBroker) *Agent {
+func NewAgent(conn *websocket.Conn, cb *broker.ChatBroker) *Agent {
 	return &Agent{
-		cb: cb,
+		cb:   cb,
+		conn: conn,
 	}
+}
+
+func (a *Agent) HandleConn(conn *websocket.Conn, req *initConReq) {
+	a.conn.SetCloseHandler(func(code int, text string) error {
+		return nil
+	})
 }

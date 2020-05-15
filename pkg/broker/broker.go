@@ -1,21 +1,12 @@
 package broker
 
 import (
-	"io"
+	"github.com/lyyyuna/tonghu-chat/pkg/chat"
 )
 
-type Broker struct {
-	mq MessageBroker
-}
-
-// MessageBroker represents a message broker interface
-type MessageBroker interface {
-	Send(string, []byte) error
-	SubscribeSeq(string, string, uint64, func(uint64, []byte)) (io.Closer, error)
-}
-
-func NewBroker(mq MessageBroker) *Broker {
-	return &Broker{
-		mq: mq,
-	}
+// ChatBroker represents chat broker interface
+type ChatBroker interface {
+	Subscribe(string, string, uint64, chan *chat.Message) (func(), error)
+	SubscribeNew(string, string, chan *chat.Message) (func(), error)
+	Send(string, *chat.Message) error
 }
