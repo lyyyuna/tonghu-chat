@@ -37,6 +37,16 @@ func (nc *NatsClient) subscribeSeq(id string, start uint64, f func(uint64, []byt
 		stan.SetManualAckMode())
 }
 
+func (nc *NatsClient) subscribeTimestamp(id string, t time.Time, f func(uint64, []byte)) (stan.Subscription, error) {
+	return nc.cn.Subscribe(
+		id,
+		func(m *stan.Msg) {
+			f(m.Sequence, m.Data)
+		},
+		stan.StartAtTime(t),
+		stan.SetManualAckMode())
+}
+
 func (nc *NatsClient) Subscribe(chatId string, uid string, start uint64, c chan *chat.Message) (io.Closer, error) {
 	closer, err := nc.subscribeSeq("chat."+chatId, start, func(seq uint64, data []byte) {
 		var msg chat.Message
@@ -54,6 +64,28 @@ func (nc *NatsClient) Subscribe(chatId string, uid string, start uint64, c chan 
 			c <- &msg
 		} else {
 
+		}
+	})
+
+	return closer, err
+}
+
+func (nc *NatsClient) SubscribeNew(chatId string, uid string, c chan *chat.Message) (io.Closer, error) {
+	closer, err := nc.subscribeTimestamp("chat."+chatId, time.Now(), func(seq uint64, data []byte) {
+		var msg chat.Message
+		err := json.Unmarshal(data, &msg)
+		if err != nil {
+			msg = chat.Message{
+				FromUID: "broker",
+				Text:    "broker: message unavailable: decoding error",
+				Time:    time.Now().UnixNano(),
+			}
+		}
+
+		msg.Seq = seq
+
+		if msg.FromUID != uid {
+			c <- &msg
 		}
 	})
 
