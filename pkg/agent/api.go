@@ -13,11 +13,11 @@ import (
 // API represents websocket api service
 type API struct {
 	upgrader websocket.Upgrader
-	broker   *broker.Broker
+	broker   *broker.ChatBroker
 }
 
 // NewAPI creates new websocket api
-func NewAPI(r *gin.Engine, br *broker.Broker) *API {
+func NewAPI(r *gin.Engine, br *broker.ChatBroker) *API {
 	api := &API{
 		broker: br,
 		upgrader: websocket.Upgrader{
@@ -46,7 +46,7 @@ func (api *API) connect(c *gin.Context) {
 		return
 	}
 
-	agent := NewAgent(api.broker)
+	agent := NewAgent(conn, api.broker)
 	agent.HandleConn(conn, req)
 }
 
