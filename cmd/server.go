@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 var serverCmd = &cobra.Command{
@@ -23,6 +24,10 @@ var (
 )
 
 func init() {
+	logger, _ := zap.NewDevelopment()
+	defer logger.Sync()
+	zap.ReplaceGlobals(logger)
+
 	serverCmd.Flags().StringVarP(&natsClusterId, "natsclusterid", "", "0.0.0.0", "")
 	serverCmd.Flags().StringVarP(&natsClientId, "natsclientid", "", "", "")
 	serverCmd.Flags().StringVarP(&natsHost, "natshost", "", "127.0.0.1", "")

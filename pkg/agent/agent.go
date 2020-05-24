@@ -7,7 +7,9 @@ import (
 	"github.com/lyyyuna/tonghu-chat/pkg/broker"
 	"github.com/lyyyuna/tonghu-chat/pkg/chat"
 	"github.com/lyyyuna/tonghu-chat/pkg/store"
+	"go.uber.org/zap"
 	"io"
+	"time"
 )
 
 // One agent per connection
@@ -136,5 +138,18 @@ func (a *Agent) handleChatMsg(raw json.RawMessage) {
 	}
 
 	// send to chat broker
-	a.cb.Send(a.channel.Name)
+	err = a.cb.Send(a.channel.Name, &chat.Message{
+		Meta:     nil,
+		Time:     time.Now().UnixNano(),
+		Seq:      textMessage.Seq,
+		Text:     textMessage.Text,
+		FromUID:  a.user.UID,
+		FromName: a.user.DisplayName,
+	})
+
+	if err != nil {
+		writeErr(a.conn, fmt.Sprintf("could not forward your message"))
+		zap.S().Infof("Could not forward your message, err: %v", err)
+		return
+	}
 }
