@@ -1,12 +1,61 @@
 package chat
 
-import ()
+import (
+	"errors"
+)
 
 type Channel struct {
 	Name    string           `json:"name"`
 	Members map[string]*User `json:"members"`
 }
 
-func (c *Channel) Join(uid string) {
+func NewChannel(name string) *Channel {
+	return &Channel{
+		Name:    name,
+		Members: make(map[string]*User),
+	}
+}
 
+// Chat errors
+var (
+	errAlreadyRegistered = errors.New("chat: uid already registered in this chat")
+	errNotRegistered     = errors.New("chat: not a member of this channel")
+)
+
+// Register registers user with a chat and returns secret which should
+// be stored on the client side, and used for subsequent join requests
+func (c *Channel) Register(u *User) error {
+	if _, ok := c.Members[u.UID]; ok {
+		return errAlreadyRegistered
+	}
+
+	c.Members[u.UID] = u
+	return nil
+}
+
+// Join attempts to join user to chat
+func (c *Channel) Join(uid string) (*User, error) {
+	u, ok := c.Members[uid]
+	if !ok {
+		return nil, errNotRegistered
+	}
+
+	return u, nil
+}
+
+func (c *Channel) Leave(uid string) {
+	delete(c.Members, uid)
+}
+
+func (c *Channel) ListMembers(uid string) []*User {
+	if len(c.Members) < 1 {
+		return nil
+	}
+
+	var members []*User
+	for _, v := range c.Members {
+		members = append(members, v)
+	}
+
+	return members
 }

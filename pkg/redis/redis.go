@@ -1,8 +1,10 @@
 package redis
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/go-redis/redis"
+	"github.com/lyyyuna/tonghu-chat/pkg/chat"
 	"strconv"
 )
 
@@ -40,13 +42,32 @@ func NewRedisClient(host, pass string, port int) (*RedisClient, error) {
 	return &RedisClient{cl: client}, nil
 }
 
-// Get retrieve a chat from the redis
-func (r *RedisClient) Get(id string) {
+// GetChannel retrieve a channel from the redis
+func (r *RedisClient) GetChannel(id string) (*chat.Channel, error) {
 	val, err := r.cl.Get(chatID(id)).Result()
 	if err != nil {
 		return nil, err
 	}
-	return val, nil
+
+	var ch chat.Channel
+	err = json.Unmarshal([]byte(val), &ch)
+	if err != nil {
+		return nil, err
+	}
+	return &ch, nil
+}
+
+func (r *RedisClient) SaveChannel(ch *chat.Channel) error {
+	data, err := json.Marshal(ch)
+	if err != nil {
+		return err
+	}
+
+	pipe := r.cl.TxPipeline()
+	pipe.Set(chatID(chatID(ch.Name)), data, 0)
+
+	_, err = pipe.Exec()
+	return err
 }
 
 func chatID(id string) string {
