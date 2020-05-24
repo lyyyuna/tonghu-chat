@@ -7,19 +7,22 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/lyyyuna/tonghu-chat/pkg/broker"
+	"github.com/lyyyuna/tonghu-chat/pkg/store"
 	"net/http"
 )
 
 // API represents websocket api service
 type API struct {
 	upgrader websocket.Upgrader
-	broker   *broker.ChatBroker
+	broker   broker.ChatBroker
+	store    store.ChatStore
 }
 
 // NewAPI creates new websocket api
-func NewAPI(r *gin.Engine, br *broker.ChatBroker) *API {
+func NewAPI(r *gin.Engine, br broker.ChatBroker, store store.ChatStore) *API {
 	api := &API{
 		broker: br,
+		store:  store,
 		upgrader: websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
@@ -46,7 +49,7 @@ func (api *API) connect(c *gin.Context) {
 		return
 	}
 
-	agent := NewAgent(conn, api.broker)
+	agent := NewAgent(conn, api.broker, api.store)
 	agent.HandleConn(conn, req)
 }
 
