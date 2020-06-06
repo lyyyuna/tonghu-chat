@@ -1,7 +1,5 @@
 package chat
 
-import ()
-
 type User struct {
 	UID         string `json:"uid"`
 	DisplayName string `json:"display_name"`

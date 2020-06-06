@@ -6,20 +6,19 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"github.com/lyyyuna/tonghu-chat/pkg/broker"
-	"github.com/lyyyuna/tonghu-chat/pkg/store"
+	"github.com/lyyyuna/tonghu-chat/pkg/chat"
 	"net/http"
 )
 
 // API represents websocket api service
 type API struct {
 	upgrader websocket.Upgrader
-	broker   broker.ChatBroker
-	store    store.ChatStore
+	broker   chat.ChatBroker
+	store    chat.ChatStore
 }
 
 // NewAPI creates new websocket api
-func NewAPI(r *gin.Engine, br broker.ChatBroker, store store.ChatStore) *API {
+func NewAPI(r *gin.Engine, br chat.ChatBroker, store chat.ChatStore) *API {
 	api := &API{
 		broker: br,
 		store:  store,

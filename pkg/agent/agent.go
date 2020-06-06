@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
-	"github.com/lyyyuna/tonghu-chat/pkg/broker"
 	"github.com/lyyyuna/tonghu-chat/pkg/chat"
-	"github.com/lyyyuna/tonghu-chat/pkg/store"
 	"go.uber.org/zap"
 	"io"
 	"time"
@@ -14,8 +12,8 @@ import (
 
 // One agent per connection
 type Agent struct {
-	cb       broker.ChatBroker
-	store    store.ChatStore
+	cb       chat.ChatBroker
+	store    chat.ChatStore
 	conn     *websocket.Conn
 	channel  *chat.Channel
 	user     *chat.User
@@ -25,7 +23,7 @@ type Agent struct {
 }
 
 // NewAgent creates new connection agent instance
-func NewAgent(conn *websocket.Conn, cb broker.ChatBroker, store store.ChatStore) *Agent {
+func NewAgent(conn *websocket.Conn, cb chat.ChatBroker, store chat.ChatStore) *Agent {
 	return &Agent{
 		cb:    cb,
 		conn:  conn,
