@@ -2,9 +2,9 @@ package nats
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/lyyyuna/tonghu-chat/pkg/chat"
 	stan "github.com/nats-io/stan.go"
+	"go.uber.org/zap"
 	"io"
 	"time"
 )
@@ -15,15 +15,21 @@ type NatsClient struct {
 }
 
 // NewNatsClient initializes a connection to NATS server
-func NewNatsClient(clusterID, clientID, url string) (*NatsClient, error) {
+func NewNatsClient(clusterID, clientID, url string) *NatsClient {
 	conn, err := stan.Connect(clusterID, clientID, stan.NatsURL(url))
 	if err != nil {
-		return nil, fmt.Errorf("error connecting to NATS: %v", err)
+		zap.S().Fatalf("Fail to connect to NATS server: %v", err)
 	}
-	return &NatsClient{cn: conn}, nil
+	return &NatsClient{cn: conn}
 }
 
-func (nc *NatsClient) Send(id string, msg []byte) error {
+func (nc *NatsClient) Send(id string, message *chat.Message) error {
+	var msg []byte
+	err := json.Unmarshal(msg, message)
+	if err != nil {
+		zap.S().Errorf("Fail to unmarshal the chat message, the err: %v", err)
+		return err
+	}
 	return nc.cn.Publish(id, msg)
 }
 

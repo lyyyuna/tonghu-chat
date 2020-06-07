@@ -10,16 +10,16 @@ import (
 	"net/http"
 )
 
-// API represents websocket api service
-type API struct {
+// WssServer represents websocket api service
+type WssServer struct {
 	upgrader websocket.Upgrader
 	broker   chat.ChatBroker
 	store    chat.ChatStore
 }
 
-// NewAPI creates new websocket api
-func NewAPI(r *gin.Engine, br chat.ChatBroker, store chat.ChatStore) *API {
-	api := &API{
+// NewWssServer creates new websocket api
+func NewWssServer(r *gin.Engine, br chat.ChatBroker, store chat.ChatStore) *WssServer {
+	api := &WssServer{
 		broker: br,
 		store:  store,
 		upgrader: websocket.Upgrader{
@@ -32,7 +32,7 @@ func NewAPI(r *gin.Engine, br chat.ChatBroker, store chat.ChatStore) *API {
 	return api
 }
 
-func (api *API) connect(c *gin.Context) {
+func (api *WssServer) connect(c *gin.Context) {
 	w := c.Writer
 	r := c.Request
 	conn, err := api.upgrader.Upgrade(w, r, nil)
@@ -61,7 +61,7 @@ type initConReq struct {
 
 var errConnClosed = errors.New("connection closed")
 
-func (api *API) waitConnInit(conn *websocket.Conn) (*initConReq, error) {
+func (api *WssServer) waitConnInit(conn *websocket.Conn) (*initConReq, error) {
 	t, wsr, err := conn.NextReader()
 	if err != nil || t == websocket.CloseMessage {
 		return nil, errConnClosed

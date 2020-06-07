@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis"
 	"github.com/lyyyuna/tonghu-chat/pkg/chat"
+	"go.uber.org/zap"
 	"strconv"
 )
 
@@ -24,7 +25,7 @@ type RedisClient struct {
 }
 
 // NewRedisClient starts a new redis client
-func NewRedisClient(host, pass string, port int) (*RedisClient, error) {
+func NewRedisClient(host, pass string, port int) *RedisClient {
 	opts := redis.Options{
 		Addr: host + ":" + strconv.Itoa(port),
 	}
@@ -36,10 +37,10 @@ func NewRedisClient(host, pass string, port int) (*RedisClient, error) {
 
 	_, err := client.Ping().Result()
 	if err != nil {
-		return nil, fmt.Errorf("cannot connect to Redis Addr %v, Port %v Reason %v", host, port, err)
+		zap.S().Fatalf("cannot connect to Redis Addr %v, Port %v Reason %v", host, port, err)
 	}
 
-	return &RedisClient{cl: client}, nil
+	return &RedisClient{cl: client}
 }
 
 // GetChannel retrieve a channel from the redis

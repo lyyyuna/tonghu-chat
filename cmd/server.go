@@ -1,7 +1,12 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/lyyyuna/tonghu-chat/pkg/agent"
+	"github.com/lyyyuna/tonghu-chat/pkg/chat"
+	"github.com/lyyyuna/tonghu-chat/pkg/nats"
+	"github.com/lyyyuna/tonghu-chat/pkg/redis"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -40,5 +45,14 @@ func init() {
 
 func runChatServer(cmd *cobra.Command, args []string) {
 	r := gin.Default()
-	r.Run()
+
+	natsUri := fmt.Sprintf("%v:%v", natsHost, natsPort)
+	nc := nats.NewNatsClient(natsClusterId, natsClientId, natsUri)
+	// redisUri := fmt.Sprintf("%v:%v", redisHost, redisPort)
+	rc := redis.NewRedisClient(redisHost, "", redisPort)
+
+	agent.NewWssServer(r, nc, rc)
+	chat.NewChatServer(r, rc)
+	chatUri := fmt.Sprintf("%v:%v", chatHost, chatPort)
+	r.Run(chatUri)
 }
