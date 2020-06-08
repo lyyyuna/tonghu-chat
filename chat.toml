@@ -1,0 +1,12 @@
+chathost = "0.0.0.0"
+chatport = 8080
+
+[nats]
+clusterid = "test-cluster"
+clientid = "test-client"
+host = "100.100.62.10"
+port = 4222
+
+[redis]
+host = "100.100.62.10"
+port = 16379

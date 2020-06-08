@@ -25,7 +25,7 @@ func NewWssServer(r *gin.Engine, br chat.ChatBroker, store chat.ChatStore) *WssS
 		upgrader: websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
-			CheckOrigin:     func(r *http.Request) bool { return false },
+			CheckOrigin:     func(r *http.Request) bool { return true },
 		},
 	}
 	r.GET("/connect", api.connect)
@@ -38,13 +38,19 @@ func (api *WssServer) connect(c *gin.Context) {
 	conn, err := api.upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error while upgrading to ws connection: %v", err), 200)
+		return
 	}
 	req, err := api.waitConnInit(conn)
 	if err != nil {
 		if err == errConnClosed {
 			return
 		}
-		writeErr(conn, err.Error())
+		writeFatal(conn, err.Error())
+		return
+	}
+
+	if req.UID == "" || req.Channel == "" {
+		writeFatal(conn, "wrong init request")
 		return
 	}
 

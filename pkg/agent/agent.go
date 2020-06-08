@@ -51,14 +51,13 @@ func (a *Agent) HandleConn(conn *websocket.Conn, req *initConReq) {
 	a.user = user
 
 	mc := make(chan *chat.Message)
-	var closer func()
-	closer, err = a.cb.SubscribeNew(req.Channel, user.UID, mc)
+	closer, err := a.cb.SubscribeNew(req.Channel, user.UID, mc)
 
 	if err != nil {
 		writeFatal(a.conn, fmt.Sprintf("agent: unable to subscribe to chat updates due to: %v. closing connection", err))
 		return
 	}
-	a.closeSub = closer
+	a.closeSub = func() { closer.Close() }
 
 }
 
