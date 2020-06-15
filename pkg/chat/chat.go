@@ -1,9 +1,10 @@
 package chat
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"net/http"
 )
 
 type API struct {
@@ -60,6 +61,7 @@ func (api *API) register(ctx *gin.Context) {
 		UID:         req.UID,
 		DisplayName: req.DisplayName,
 		Email:       req.Email,
+		Secret:      req.Secret,
 	})
 
 	if err != nil {

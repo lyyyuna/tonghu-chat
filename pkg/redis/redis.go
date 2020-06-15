@@ -3,10 +3,11 @@ package redis
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+
 	"github.com/go-redis/redis"
 	"github.com/lyyyuna/tonghu-chat/pkg/chat"
 	"go.uber.org/zap"
-	"strconv"
 )
 
 const (
@@ -65,7 +66,7 @@ func (r *RedisClient) SaveChannel(ch *chat.Channel) error {
 	}
 
 	pipe := r.cl.TxPipeline()
-	pipe.Set(chatID(chatID(ch.Name)), data, 0)
+	pipe.Set(chatID(ch.Name), data, 0)
 
 	_, err = pipe.Exec()
 	return err

@@ -20,6 +20,7 @@ func NewChannel(name string) *Channel {
 var (
 	errAlreadyRegistered = errors.New("chat: uid already registered in this chat")
 	errNotRegistered     = errors.New("chat: not a member of this channel")
+	errInvalidSecret     = errors.New("chat: invalid secret")
 )
 
 // Register registers user with a chat and returns secret which should
@@ -34,10 +35,13 @@ func (c *Channel) Register(u *User) error {
 }
 
 // Join attempts to join user to chat
-func (c *Channel) Join(uid string) (*User, error) {
+func (c *Channel) Join(uid, secret string) (*User, error) {
 	u, ok := c.Members[uid]
 	if !ok {
 		return nil, errNotRegistered
+	}
+	if u.Secret != secret {
+		return nil, errInvalidSecret
 	}
 
 	return u, nil

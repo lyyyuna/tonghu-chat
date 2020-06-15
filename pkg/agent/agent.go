@@ -3,11 +3,12 @@ package agent
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"time"
+
 	"github.com/gorilla/websocket"
 	"github.com/lyyyuna/tonghu-chat/pkg/chat"
 	"go.uber.org/zap"
-	"io"
-	"time"
 )
 
 // One agent per connection
@@ -43,7 +44,7 @@ func (a *Agent) HandleConn(conn *websocket.Conn, req *initConReq) {
 		writeFatal(a.conn, fmt.Sprintf("agent: unable to find chat: %v", err))
 	}
 
-	user, err := ch.Join(req.UID)
+	user, err := ch.Join(req.UID, req.Secret)
 	if err != nil {
 		writeFatal(a.conn, fmt.Sprintf("agent: unable to join chat: %v", err))
 		return
